@@ -1,20 +1,21 @@
-'use client'
+"use client";
+export const revalidate = 0; // Disable static generation
 
-import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 
-const SwaggerUI = dynamic(() => import('swagger-ui-react'), { ssr: false })
+const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
 
 export default function DocsPage() {
-  const [spec, setSpec] = useState<any>(null)
+  const [spec, setSpec] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/openapi')
+    fetch("/api/openapi")
       .then((res) => res.json())
-      .then((data) => setSpec(data))
-  }, [])
+      .then((data) => setSpec(data));
+  }, []);
 
-  if (!spec) return <p>Loading API docs...</p>
+  if (!spec) return <p>Loading API docs...</p>;
 
-  return <SwaggerUI spec={spec} />
+  return <SwaggerUI spec={spec} />;
 }

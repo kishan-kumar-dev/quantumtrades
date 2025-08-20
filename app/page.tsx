@@ -1,3 +1,5 @@
+export const revalidate = 0; // Disable static generation
+
 import Link from "next/link";
 
 export default function Home() {

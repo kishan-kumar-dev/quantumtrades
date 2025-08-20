@@ -1,4 +1,7 @@
 "use client";
+
+export const revalidate = 0; // Disable static generation
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 

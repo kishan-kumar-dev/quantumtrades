@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { addClient } from '@/lib/events'
 
 export async function GET() {
