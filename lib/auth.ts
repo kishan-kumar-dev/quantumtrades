@@ -2,9 +2,9 @@ import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 
 /**
- * Load JWT secret.
- * - In development, falls back to a default string.
- * - In production, throws if JWT_SECRET is missing.
+ * Load JWT secret
+ * - Dev fallback: "dev_secret_change_me"
+ * - Production: must be set in environment
  */
 const secret = new TextEncoder().encode(
   process.env.JWT_SECRET ??
@@ -45,7 +45,7 @@ export async function comparePassword(
 }
 
 /**
- * Create a signed JWT
+ * Create a signed JWT (valid for 7 days)
  */
 export async function createJWT(payload: JWTPayload): Promise<string> {
   return await new SignJWT(payload)
@@ -68,5 +68,7 @@ export async function verifyJWT(token: string): Promise<JWTPayload> {
  */
 export function createAuthCookie(token: string): string {
   const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
-  return `token=${token}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict; Secure`;
+  return `token=${token}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict; Secure=${
+    process.env.NODE_ENV === "production"
+  }`;
 }
