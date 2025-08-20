@@ -2,10 +2,10 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    globals: true,
     environment: 'jsdom',
-    setupFiles: './tests/setup.ts', // <-- must exist
+    setupFiles: './tests/setup.ts',
     coverage: {
+      provider: 'istanbul',   // <- Add this line
       reporter: ['text', 'lcov'],
     },
   },
