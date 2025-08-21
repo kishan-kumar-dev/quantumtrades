@@ -1,3 +1,4 @@
+
 ```markdown
 # QuantumTrades (Next.js Full‑Stack)
 
@@ -5,10 +6,12 @@
 ![Node Version](https://img.shields.io/badge/node-18+-blue)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-8.6%25-red)
+![Docker](https://img.shields.io/badge/docker-ready-blueviolet)
+![Prisma](https://img.shields.io/badge/prisma-4.16.0-blueviolet)
 
-A beginner-friendly, production‑minded **real-time trading demo** built with **Next.js (App Router)**, **TypeScript**, **Prisma + SQLite**, **JWT auth (httpOnly cookie)**, and **SSE live updates**. Fully responsive across desktop, tablet, and mobile.
+A beginner-friendly, production-minded **real-time trading demo** built with **Next.js (App Router)**, **TypeScript**, **Prisma + SQLite**, **JWT auth (httpOnly cookie)**, and **SSE live updates**. Fully responsive across desktop, tablet, and mobile.
 
-> Extract and run immediately — no external DB or config required.
+> Extract and run immediately — no external DB or complex config required.
 
 ---
 
@@ -32,13 +35,15 @@ A beginner-friendly, production‑minded **real-time trading demo** built with *
 ```
 
 quantumtrades-nextjs/
-app/                # Next.js App Router pages & API endpoints
-components/         # Reusable UI components
-lib/                # Prisma client, auth utils, pubsub, matching engine
-prisma/             # Prisma schema + SQLite db
-tests/              # Vitest tests
-public/             # Optional assets
-README.md           # This file
+├─ app/              # Next.js App Router pages & API endpoints
+├─ components/       # Reusable UI components
+├─ lib/              # Prisma client, auth utils, pubsub, matching engine
+├─ prisma/           # Prisma schema + SQLite db
+├─ tests/            # Vitest tests
+├─ public/           # Optional assets
+├─ .env              # Environment variables
+├─ docker-compose.yml # Optional Docker setup
+├─ README.md         # This file
 
 ````
 
@@ -56,13 +61,14 @@ README.md           # This file
 | State Updates | SSE (Server Sent Events)| Real-time order updates |
 | Styling       | Tailwind CSS           | Utility-first responsive design |
 | Testing       | Vitest                 | Unit tests & coverage |
-| Deployment    | Vercel / Netlify       | Supports full-stack Next.js apps |
+| Deployment    | Vercel / Netlify / Docker | Supports full-stack Next.js apps |
 
 ---
 
 ## 🚀 Quick Start (Local)
 
 1. **Clone the repo**
+
 ```bash
 git clone https://github.com/kishan-kumar-dev/quantumtrades.git
 cd quantumtrades
@@ -75,18 +81,19 @@ npm install
 ```
 
 3. **Set environment variables**
-   Create a `.env` file in the root:
+
+Create a `.env` file in the root:
 
 ```
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="supersecurerandomstring123"
+DATABASE_URL="file:./dev.db"           # SQLite file for development
+JWT_SECRET="supersecurerandomstring123" # Change in production
+NEXT_TELEMETRY_DISABLED="1"            # Optional: disables Next.js telemetry
 ```
-
-> JWT\_SECRET is optional for local development; production requires a strong secret.
 
 4. **Generate Prisma client & build**
 
 ```bash
+npx prisma generate
 npm run build
 ```
 
@@ -97,7 +104,21 @@ npx prisma migrate deploy || true   # creates DB if absent
 npm run dev
 ```
 
-6. Visit [http://localhost:3000](http://localhost:3000) → Register → Dashboard → Place orders.
+6. **Open app in browser**
+
+[http://localhost:3000](http://localhost:3000) → Register → Dashboard → Place orders.
+
+---
+
+## 🐳 Docker Setup (Optional)
+
+1. Build and start services:
+
+```bash
+docker-compose up --build
+```
+
+2. Visit [http://localhost:3000](http://localhost:3000) to use the app.
 
 ---
 
@@ -161,8 +182,6 @@ Creates demo account:
 
 ## 📊 Architecture Diagram
 
-### Mermaid
-
 ```mermaid
 flowchart TD
     User[User Browser] -->|HTTPS| NextJS[Next.js Full-stack App]
@@ -182,6 +201,17 @@ flowchart TD
 * Delete `./prisma/dev.db` to reset database
 * If Prisma client is missing: `npm run build`
 * For production DB: edit `prisma/schema.prisma` and run migrations
+* Ensure Node.js >= 18 installed
+* For Docker, ensure ports `5432` and `3000` are free
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a new branch `feature/xyz`
+3. Make changes and commit
+4. Open a Pull Request
 
 ---
 
@@ -194,3 +224,6 @@ MIT License
 ## 📬 Author
 
 * Name: Kishan Kumar
+* GitHub: [kishan-kumar-dev](https://github.com/kishan-kumar-dev)
+
+```

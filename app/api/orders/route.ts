@@ -8,7 +8,7 @@ import { broadcast } from "@/lib/events";
 const schema = z.object({
   marketId: z.number(),
   side: z.enum(["buy", "sell"]),
-  type: z.enum(["limit", "market"]),
+  type: z.enum(["limit", "market"]), // client sends "type"
   price: z.number().optional(),
   quantity: z.number(),
 });
@@ -36,15 +36,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const userId = 1; // placeholder, replace with actual authenticated user
+  const userId = 1; // TODO: replace with actual authenticated user
 
   const { marketId, side, type, price, quantity } = parsed.data;
 
+  // map `type` -> `kind` for engine
   const orderData: NewOrder = {
     userId,
     marketId,
     side,
-    type,
+    kind: type,
     price,
     quantity,
   };

@@ -1,17 +1,17 @@
 import { PrismaClient } from "@prisma/client";
 
-// Type for attaching prisma to the global object in dev
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+// Extend the global object to store Prisma instance
+declare global {
+  // eslint-disable-next-line no-var
+  var __prisma: PrismaClient | undefined;
+}
 
-// Use existing PrismaClient if present, otherwise create a new one
+// Use existing Prisma client if available (singleton)
 export const prisma =
-  globalForPrisma.prisma ||
+  global.__prisma ??
   new PrismaClient({
-    log: ["query", "error", "warn"], // Logs queries, errors, warnings
+    log: ["query"], // Optional: logs all queries, useful in dev
   });
 
-// Only attach to global in non-production to prevent multiple instances
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-// Default export
-export default prisma;
+// Attach Prisma to global in development to prevent multiple instances
+if (process.env.NODE_ENV !== "production") global.__prisma = prisma;
