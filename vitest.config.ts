@@ -1,12 +1,13 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    environment: 'jsdom',
-    setupFiles: './tests/setup.ts',
+    environment: "node",
     coverage: {
-      provider: 'istanbul',   // <- Add this line
-      reporter: ['text', 'lcov'],
+      provider: "v8",
+      reporter: ["text", "html"],
+      reportsDirectory: "coverage",
+      all: true,
     },
   },
 });

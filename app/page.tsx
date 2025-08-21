@@ -1,4 +1,4 @@
-export const revalidate = 0; // Disable static generation
+ // Disable static generation
 
 import Link from "next/link";
 

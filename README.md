@@ -194,5 +194,3 @@ MIT License
 ## 📬 Author
 
 * Name: Kishan Kumar
-
-```

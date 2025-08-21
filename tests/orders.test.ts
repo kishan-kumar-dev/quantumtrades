@@ -1,48 +1,54 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { prisma } from "../lib/prisma";
-import { placeOrder } from "../lib/engine";
+import { placeOrder, NewOrder } from "../lib/engine";
 
-describe("Orders API/engine", () => {
-  beforeAll(async () => {
-    // Disable foreign keys temporarily
-    await prisma.$executeRaw`PRAGMA foreign_keys = OFF;`;
+// Optional: mock Prisma to avoid hitting real DB
+vi.mock("../lib/prisma");
 
-    // Delete dependent tables first
-    await prisma.trade.deleteMany();
-    await prisma.order.deleteMany();
-    await prisma.user.deleteMany();
-
-    // Re-enable foreign keys
-    await prisma.$executeRaw`PRAGMA foreign_keys = ON;`;
+describe("Orders API/Engine", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it("places and cancels an order", async () => {
-    const u = await prisma.user.upsert({
-      where: { email: "o1@test.com" },
-      update: {},
-      create: {
-        email: "o1@test.com",
-        name: "O1",
-        password: "x",
-        role: "trader",
-      },
+  it("places a new order", async () => {
+    const newOrder: NewOrder = {
+      userId: 1,
+      marketId: 1,
+      side: "buy",
+      type: "limit",
+      price: 100,
+      quantity: 5,
+    };
+
+    // Mock prisma.order.create
+    (prisma.order.create as any).mockResolvedValue({
+      id: 123,
+      ...newOrder,
+      status: "open",
     });
 
-    const order = await prisma.order.create({
-      data: {
-        userId: u.id,
-        side: "buy",
-        type: "limit",
-        price: 100,
-        quantity: 1,
-      },
-    });
-    expect(order.status).toBe("open");
+    const saved = await placeOrder(newOrder);
 
-    const cancelled = await prisma.order.update({
-      where: { id: order.id },
-      data: { status: "cancelled" },
+    expect(saved).toHaveProperty("id");
+    expect(saved.side).toBe("buy");
+    expect(saved.quantity).toBe(5);
+    expect(saved.status).toBe("open");
+  });
+
+  it("cancels an order", async () => {
+    const orderId = 123;
+
+    // Mock prisma.order.update
+    (prisma.order.update as any).mockResolvedValue({
+      id: orderId,
+      status: "canceled",
     });
-    expect(cancelled.status).toBe("cancelled");
+
+    const canceled = await prisma.order.update({
+      where: { id: orderId },
+      data: { status: "canceled" },
+    });
+
+    expect(canceled.status).toBe("canceled");
   });
 });

@@ -5,11 +5,9 @@ import { prisma } from "../lib/prisma";
 // Reset SQLite DB before each test
 beforeEach(() => {
   try {
-    // Unix/macOS
-    execSync("rm -f ./prisma/dev.db");
+    execSync("rm -f ./prisma/dev.db"); // macOS / Linux
   } catch {
-    // Windows fallback
-    execSync("del /f /q .\\prisma\\dev.db");
+    execSync("del /f /q .\\prisma\\dev.db"); // Windows
   }
 });
 

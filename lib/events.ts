@@ -1,18 +1,22 @@
-type Client = { id: number; controller: ReadableStreamDefaultController }
-let clients: Client[] = []
-let _id = 1
+type Client = {
+  controller: ReadableStreamDefaultController<Uint8Array>;
+};
 
-export function addClient(controller: ReadableStreamDefaultController) {
-  const id = _id++
-  clients.push({ id, controller })
+const clients: Client[] = [];
+
+export function addClient(
+  controller: ReadableStreamDefaultController<Uint8Array>
+) {
+  const client = { controller };
+  clients.push(client);
   return () => {
-    clients = clients.filter(c => c.id !== id)
-  }
+    const index = clients.indexOf(client);
+    if (index !== -1) clients.splice(index, 1);
+  };
 }
 
 export function broadcast(event: string, data: any) {
-  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
-  for (const c of clients) {
-    try { c.controller.enqueue(new TextEncoder().encode(payload)) } catch {}
-  }
+  const enc = new TextEncoder();
+  const msg = enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  clients.forEach((c) => c.controller.enqueue(msg));
 }

@@ -1,0 +1,71 @@
+name: Node.js CI/CD
+
+# Trigger workflow on push and pull request to main or dev branches
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: quantumtrades
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U user -d quantumtrades"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://user:password@localhost:5432/quantumtrades
+      JWT_SECRET: supersecurerandomstring123
+      NODE_ENV: test
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Generate Prisma client
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      # Step 5: Run database migrations
+      - name: Run migrations
+        run: npx prisma migrate deploy
+
+      # Step 6: Lint code
+      - name: Run ESLint
+        run: npx eslint . --ext .ts,.tsx
+
+      # Step 7: Run tests with coverage
+      - name: Run tests
+        run: npm run test -- --coverage
+
+      # Step 8: Upload coverage report as artifact
+      - name: Upload coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage

@@ -1,5 +1,5 @@
 "use client";
-export const revalidate = 0; // Disable static generation
+ // Disable static generation
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";

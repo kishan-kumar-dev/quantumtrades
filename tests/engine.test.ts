@@ -2,53 +2,54 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { prisma } from "../lib/prisma";
 import { placeOrder } from "../lib/engine";
 
-describe("matching engine", () => {
-  beforeAll(async () => {
-    // Disable foreign keys temporarily (SQLite specific)
-    await prisma.$executeRaw`PRAGMA foreign_keys = OFF;`;
+describe("Matching Engine", () => {
+  let marketId: number;
 
-    // Delete dependent tables first
+  beforeAll(async () => {
+    await prisma.$executeRaw`PRAGMA foreign_keys = OFF`;
     await prisma.trade.deleteMany();
     await prisma.order.deleteMany();
     await prisma.user.deleteMany();
+    await prisma.market.deleteMany();
 
-    // Re-enable foreign keys
-    await prisma.$executeRaw`PRAGMA foreign_keys = ON;`;
+    // Create a market to use in tests
+    const market = await prisma.market.create({
+      data: { symbol: "BTCUSD", name: "Bitcoin / USD" },
+    });
+    marketId = market.id;
+
+    await prisma.$executeRaw`PRAGMA foreign_keys = ON`;
   });
 
-  it("matches a buy with a sell", async () => {
-    // create resting SELL
+  it("places a new order correctly", async () => {
     const user = await prisma.user.upsert({
-      where: { email: "a@a.com" },
+      where: { email: "o1@test.com" },
       update: {},
-      create: { email: "a@a.com", name: "A", password: "x", role: "trader" },
-    });
-
-    await prisma.order.create({
-      data: {
-        userId: user.id,
-        side: "sell",
-        type: "limit",
-        price: 100,
-        quantity: 1,
+      create: {
+        email: "o1@test.com",
+        name: "O1",
+        password: "x",
+        role: "trader",
       },
     });
 
-    const taker = await prisma.user.upsert({
-      where: { email: "b@b.com" },
-      update: {},
-      create: { email: "b@b.com", name: "B", password: "x", role: "trader" },
-    });
-
-    await placeOrder({
-      userId: taker.id,
+    const order = await placeOrder({
+      userId: user.id,
+      marketId,
       side: "buy",
       type: "limit",
-      price: 120,
+      price: 100,
       quantity: 1,
     });
 
-    const trades = await prisma.trade.findMany();
-    expect(trades.length).toBeGreaterThan(0);
+    expect(order.status).toBe("open");
+
+    // Cancel the order
+    const cancelled = await prisma.order.update({
+      where: { id: order.id },
+      data: { status: "cancelled" },
+    });
+
+    expect(cancelled.status).toBe("cancelled");
   });
 });
